@@ -1,7 +1,0 @@
-gato #123 casa @ perro sol $89 luna % viento fuego !334 arbol+hoja rio*77
-nube=lluvia monte/cielo estrella-999 avion&coche tren^bicicleta
-piedra_volcan mar> océano tierra<bosque planeta;espacio
-cometa:orbita teclado = rata raton? pantalla microfono~usb
-botella! mesa silla@puerta ventana#345 telefono/ celular
-reloj$24 lapiz +papel cuaderno %libro estuche^mochila
-manzana&pera banana*uva sandia+melon kiwi#333 cancion oso lampara 
