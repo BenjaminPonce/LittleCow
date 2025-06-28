@@ -84,9 +84,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'vaquita_db',
+        'NAME': 'LittleCow',
         'USER': 'postgres',
-        'PASSWORD': '1234',
+        'PASSWORD': '1234.abc',
         'HOST': 'localhost',
         'PORT': '5432',
     }
