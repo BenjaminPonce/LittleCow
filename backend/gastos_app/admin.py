@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth import get_user_model
-from .models import Grupo, IntegranteDeGrupo, GastoCompartido, Reporte
+from .models import Grupo, IntegranteDeGrupo, GastoCompartido, Reporte, JefeDeGrupo
 
 # Obtener el modelo de usuario personalizado
 Usuario = get_user_model()
@@ -69,3 +69,8 @@ class ReporteAdmin(admin.ModelAdmin):
     list_display = ['integrante', 'fecha_de_reporte']
     list_filter = ['fecha_de_reporte']
     search_fields = ['integrante__usuario__username']
+
+@admin.register(JefeDeGrupo)
+class JefeDeGrupoAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'grupo_a_cargo')
+    list_filter = ('grupo_a_cargo',)
