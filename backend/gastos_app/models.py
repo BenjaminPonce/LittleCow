@@ -54,6 +54,14 @@ class Grupo(models.Model):
         verbose_name = "Grupo"
         verbose_name_plural = "Grupos"
 
+class JefeDeGrupo(models.Models):
+    usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
+    grupo_a_cargo = models.ForeignKey('Grupo', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.usuario.username} dueño de {self.grupo_a_cargo.nombre}"
+
+
 # Modelo intermedio Integrante de grupo según tu diagrama
 class IntegranteDeGrupo(models.Model):
     usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
