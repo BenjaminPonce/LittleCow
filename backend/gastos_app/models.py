@@ -60,6 +60,10 @@ class JefeDeGrupo(models.Model):
 
     def __str__(self):
         return f"{self.usuario.username} dueño de {self.grupo_a_cargo.nombre}"
+    
+    class Meta:
+        verbose_name = "Jefe de Grupo"
+        verbose_name_plural = "Jefes de Grupo"
 
 
 # Modelo intermedio Integrante de grupo según tu diagrama
