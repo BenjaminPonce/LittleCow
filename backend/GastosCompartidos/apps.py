@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class GastosAppConfig(AppConfig):
+class GastoscompartidosConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'gastos_app'
+    name = 'GastosCompartidos'
