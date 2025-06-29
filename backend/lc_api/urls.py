@@ -19,9 +19,6 @@ urlpatterns = [
     ),
     path('grupos/crear_grupo_completo/', CrearGrupoCompletoView.as_view()),
     path('', include(router.urls)),
-    path('login/', views.LoginView.as_view(), name='login'),
-    path('logout/', views.LogoutView.as_view(), name='logout'),
-    path('register/', views.RegisterView.as_view(), name='register'),
     path('current-user/', views.CurrentUserView.as_view(), name='current-user'),
     path('mis-grupos/', views.UserGruposView.as_view(), name='user-grupos'),
 ]
