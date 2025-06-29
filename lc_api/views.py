@@ -1,6 +1,5 @@
 from rest_framework import viewsets, permissions, status, views, response
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
-from django.contrib.auth.models import User
 from django.contrib.auth import logout, authenticate, login
 from rest_framework.authtoken.models import Token
 from .models import Usuario, Grupo, JefeDeGrupo, IntegranteDeGrupo, GastoCompartido, Reporte
@@ -8,17 +7,19 @@ from .serializers import (
     UsuarioSerializer, GrupoSerializer, JefeDeGrupoSerializer,
     IntegranteDeGrupoSerializer, GastoCompartidoSerializer, ReporteSerializer
 )
+from django.contrib.auth import get_user_model
 
-## Vistas de autenticación ##
+User = get_user_model()
 
+### 1. Vistas de Autenticación (Mantengo igual) ###
 class LoginView(views.APIView):
     permission_classes = [permissions.AllowAny]
     
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
-        
         user = authenticate(username=username, password=password)
+        
         if user:
             login(request, user)
             token, created = Token.objects.get_or_create(user=user)
@@ -27,7 +28,7 @@ class LoginView(views.APIView):
                 'user': UsuarioSerializer(user).data
             }, status=status.HTTP_200_OK)
         return response.Response(
-            {'error': 'Credenciales inválidas'}, 
+            {'error': 'Credenciales inválidas'},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -36,11 +37,10 @@ class LogoutView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
-        # Eliminar el token de autenticación
         request.user.auth_token.delete()
         logout(request)
         return response.Response(
-            {'message': 'Sesión cerrada correctamente'}, 
+            {'message': 'Sesión cerrada correctamente'},
             status=status.HTTP_200_OK
         )
 
@@ -58,11 +58,11 @@ class RegisterView(views.APIView):
                     'user': serializer.data
                 }, status=status.HTTP_201_CREATED)
         return response.Response(
-            serializer.errors, 
+            serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
 
-## ViewSets para los modelos ##
+### 2. ViewSets para Modelos (Corregidos) ###
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
@@ -99,13 +99,7 @@ class GastoCompartidoViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        # Asignar automáticamente el jefe que crea el gasto
-        jefe = JefeDeGrupo.objects.filter(
-            usuario=self.request.user, 
-            grupo=serializer.validated_data['grupo']
-        ).first()
-        serializer.save(creado_por=jefe)
+    # Eliminado perform_create ya que no existe 'creado_por' en el modelo
 
 class ReporteViewSet(viewsets.ModelViewSet):
     queryset = Reporte.objects.all()
@@ -113,7 +107,7 @@ class ReporteViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-## Vistas personalizadas adicionales ##
+### 3. Vistas Personalizadas (Corregidas) ###
 
 class CurrentUserView(views.APIView):
     authentication_classes = [TokenAuthentication]
@@ -128,10 +122,13 @@ class UserGruposView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request):
-        # Grupos donde el usuario es jefe
-        grupos_jefe = Grupo.objects.filter(jefes__usuario=request.user)
-        # Grupos donde el usuario es integrante
-        grupos_integrante = Grupo.objects.filter(integrantes__usuario=request.user)
+        # Grupos donde el usuario es jefe (corregido)
+        grupos_jefe = Grupo.objects.filter(jefe__usuario=request.user)
+        
+        # Grupos donde el usuario es integrante (corregido)
+        grupos_integrante = Grupo.objects.filter(
+            integrantedegrupo__usuario=request.user
+        )
         
         jefe_serializer = GrupoSerializer(grupos_jefe, many=True)
         integrante_serializer = GrupoSerializer(grupos_integrante, many=True)
@@ -140,3 +137,55 @@ class UserGruposView(views.APIView):
             'como_jefe': jefe_serializer.data,
             'como_integrante': integrante_serializer.data
         })
+
+### 4. Vistas Adicionales para Gestión de Grupos ###
+
+class CrearGrupoCompletoView(views.APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        grupo_serializer = GrupoSerializer(data=request.data)
+        if grupo_serializer.is_valid():
+            grupo = grupo_serializer.save()
+            
+            # Crear jefe asociado (corregido)
+            jefe = JefeDeGrupo.objects.create(
+                usuario=request.user,
+                grupo=grupo
+            )
+            
+            return response.Response({
+                'grupo': GrupoSerializer(grupo).data,
+                'jefe': JefeDeGrupoSerializer(jefe).data
+            }, status=status.HTTP_201_CREATED)
+        return response.Response(
+            grupo_serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class AñadirIntegranteView(views.APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, grupo_id):
+        try:
+            grupo = Grupo.objects.get(id=grupo_id)
+            integrante_data = {
+                'usuario': request.data.get('usuario_id'),
+                'grupo': grupo.id,
+                'ingreso_personal': request.data.get('ingreso_personal', 0),
+                'porcentaje': request.data.get('porcentaje', 0)
+            }
+            
+            serializer = IntegranteDeGrupoSerializer(data=integrante_data)
+            if serializer.is_valid():
+                serializer.save()
+                return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+            return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        except Grupo.DoesNotExist:
+            return response.Response(
+                {'error': 'Grupo no encontrado'},
+                status=status.HTTP_404_NOT_FOUND
+            )

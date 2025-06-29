@@ -39,6 +39,7 @@ STATICFILES_DIR = (
 # Application definition
 
 INSTALLED_APPS = [
+    'lc_api',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,7 +47,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'lc_api.apps.LcApiConfig', # 'lc_api'
     'rest_framework.authtoken',
 ]
 
@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'LittlecowApi.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'little_cow_db',
+        'NAME': 'vaquita_db',
         'USER': 'postgres',
         'PASSWORD': '1234',
         'HOST': 'localhost',  # Dirección de tu servidor PostgreSQL
