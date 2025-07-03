@@ -19,7 +19,6 @@ class _CrearGrupoViewState extends State<CrearGrupoView> {
   @override
   void initState() {
     super.initState();
-    // Cargar usuarios disponibles al iniciar (siguiendo el diagrama)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<CrearGrupoController>(context, listen: false).cargarUsuarios();
     });
